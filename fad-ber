@@ -1,0 +1,39 @@
+%BER
+%Rician and Rayleigh ChannelT
+clc ;clear all; close all;
+n = 10000;
+i = randi([0,1],1,n);
+i1 = 2*i -1;
+a = randn(1,n); b = randn(1,n);
+rc = 1/sqrt(2)*(sqrt(a.^2+b.^2));
+for l = 0:1:20
+snr = 10^(l/10); sdev = sqrt(0.5/snr);
+N = random('norm',0,sdev,[1,n]);
+yrc = rc.*i1+N; YR = (yrc>=0);
+ErrorR = sum((xor(YR,i)));
+ber_R(l+1) = ErrorR/n;
+end
+q = 0:1:20;
+semilogy(q,ber_R(q+1),'k-','LineWidth',2);
+hold on;
+axis([0 20 10^-5 1]);
+xlabel('SNR(dB)'); ylabel('BER');
+k1 = 10; mean = sqrt(k1/(k1+1));
+sigma = sqrt(1/(2*(k1+1)));
+Nr2 = randn(1,length(i1))*sigma+mean;
+Ni2 = randn(1,length(i1))*sigma;
+No3 = sqrt(Nr2.^2+Ni2.^2);
+for k = 0:1:20
+snrl = 10^(k/10); Np = 1/snrl;
+sd = sqrt(Np/2); No = random('Normal',0,sd,1,length(i1));
+t1 = i1.*No3+No; z1 = t1./No3;
+op1 = (z1>0);
+Berr(k+1) = sum(xor(op1,i))/n;
+end
+k = 0:1:20;
+semilogy(k,Berr(k+1),'*-');
+hold on;
+axis([0 20 10^-5 1]);
+title(' BER Performance ');
+xlabel('SNR(dB)'); ylabel('BER');
+legend('BER rayleigh','BER Rician')
